@@ -55,7 +55,7 @@ public class PedidoService {
             new HistorialOperacion(
                 "CREAR",
                 null,
-                null
+                nuevoPedido
             )
         );
 
@@ -103,8 +103,14 @@ public class PedidoService {
         historial.push(
             new HistorialOperacion(
                 "CANCELAR",
-                null,
-                null
+                new Pedido(
+                    pedido.getId(),
+                    pedido.getNombreCliente(),
+                    pedido.getDescripcion(),
+                    pedido.getMonto(),
+                    "REGISTRADO"
+                ),
+                pedido
             )
         );
 
@@ -122,8 +128,20 @@ public class PedidoService {
         historial.push(
             new HistorialOperacion(
                 "DESPACHAR",
-                null,
-                null
+                new Pedido(
+                    pedido.getId(),
+                    pedido.getNombreCliente(),
+                    pedido.getDescripcion(),
+                    pedido.getMonto(),
+                    "REGISTRADO"
+                ),
+                new Pedido(
+                    pedido.getId(),
+                    pedido.getNombreCliente(),
+                    pedido.getDescripcion(),
+                    pedido.getMonto(),
+                    "DESPACHADO"
+                )
             )
         );
         
@@ -172,5 +190,55 @@ public class PedidoService {
         double total = listaPedidos.montoTotalRecursivo();
 
         return "El total es de: " + total;
+    }
+
+    public boolean rollback() {
+        if (historial.isEmpty()) {
+            return false;
+        }
+
+        HistorialOperacion op = historial.pop();
+        Pedido antes = op.getPedidoAntes();
+        Pedido despues = op.getPedidoDespues();
+
+        switch (op.getTipoOperacion()) {
+
+            case "CREAR":
+                // Se creó un pedido → eliminar ese pedido
+                if (despues != null) {
+                    listaPedidos.removeById(despues.getId());
+                    colaPedidos.removeById(despues.getId());
+                }
+                break;
+
+            case "CANCELAR":
+                // Se canceló → restaurar estado anterior
+                if (antes != null) {
+                    Pedido p = listaPedidos.finById(antes.getId());
+                    if (p != null) {
+                        p.setEstado(antes.getEstado());
+                    }
+                    // regresar a la cola si antes estaba en REGISTRADO
+                    if (antes.getEstado().equals("REGISTRADO")) {
+                        colaPedidos.enqueue(p);
+                    }
+                }
+                break;
+
+            case "DESPACHAR":
+                // Se despachó → restaurar estado previo y regresarlo a la cola
+                if (antes != null) {
+                    Pedido p = listaPedidos.finById(antes.getId());
+                    if (p != null) {
+                        p.setEstado(antes.getEstado());
+                        colaPedidos.enqueue(p);
+                    }
+                }
+                break;
+            default:
+                return false;
+        }
+
+        return true;
     }
 }

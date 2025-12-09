@@ -71,4 +71,9 @@ public class ArrayQueue{
         }
         return (Pedido) data[front];
     }
+
+    public int getSize() {
+        return size;
+    } 
+
 }

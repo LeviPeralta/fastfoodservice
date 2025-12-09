@@ -93,4 +93,16 @@ public class Controller {
     public ResponseEntity<?> total() {
         return ResponseEntity.ok(service.calcularTotal());
     }
+
+    @PostMapping("/rollback")
+    public ResponseEntity<String> rollback() {
+        boolean ok = service.rollback();
+        if (ok) {
+            return ResponseEntity.ok("Rollback realizado.");
+        } else {
+            return ResponseEntity.badRequest().body("No hay operaciones para deshacer.");
+        }
+    }
+
+
 }
