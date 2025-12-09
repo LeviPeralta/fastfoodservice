@@ -1,8 +1,9 @@
-package com.fastfood.fastfoodservice.datastructures.synglelinkedlist;
+package com.fastfood.fastfoodservice.datastructures.syngleLinkedList;
 
 import com.fastfood.fastfoodservice.model.Pedido;
 
 public class SyngleLinkedList {
+    
     private ListNode head;
 
     public void add(Pedido data) {
