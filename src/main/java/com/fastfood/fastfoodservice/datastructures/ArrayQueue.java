@@ -37,27 +37,26 @@ public class ArrayQueue{
         return result;
     }
 
-    public void removeById(int id) {
-        int current = front;
+    public void removeByIdFIFO(int id) {
+        if (isEmpty()) return;
 
-        Pedido[] newData = new Pedido[data.length];
-        int newRear = 0;
-        int newSize = 0;
+        int elements = size;   // número real de elementos a procesar
 
-        for(int i = 0; i < size; i++){
-            Pedido p = data[current];
-            if(p.getId() != id){
-                newData[newRear] = p;
-                newRear = (newRear + 1) % newData.length;
-                newSize++;
+        Pedido[] temp = new Pedido[elements];
+        int count = 0;
+
+        // 1. Dequeue de todos los elementos
+        for (int i = 0; i < elements; i++) {
+            Pedido p = dequeue();
+            if (p.getId() != id) { 
+                temp[count++] = p; 
             }
-            current = (current + 1) % data.length;
         }
 
-        this.data = newData;
-        this.front = 0;
-        this.rear = newRear;
-        this.size = newSize;
+        // 2. Enqueue de los que quedan
+        for (int i = 0; i < count; i++) {
+            enqueue(temp[i]);
+        }
     }
 
     public boolean isEmpty() {

@@ -69,6 +69,26 @@ public class Controller {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/cancelar/{id}")
+    public ResponseEntity<?> cancelar(@PathVariable("id") int id) {
+
+        Pedido pedido = service.cancelarPedido(id);
+
+        if (pedido == null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("No se encontró el pedido con id: " + id);
+        }
+
+        // Construimos la respuesta JSON
+        Map<String, Object> json = new HashMap<>();
+        json.put("mensaje", "Pedido cancelado correctamente");
+        json.put("pedido", pedido);
+
+        return ResponseEntity.ok(json);
+    }
+
+
     @PostMapping("/despachar")
     public ResponseEntity<?> dispatch() {
         try {

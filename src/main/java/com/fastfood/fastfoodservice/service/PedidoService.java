@@ -98,7 +98,7 @@ public class PedidoService {
         }
 
         pedido.setEstado("CANCELADO");
-        colaPedidos.removeById(requestId);
+        colaPedidos.removeByIdFIFO(requestId);
 
         historial.push(
             new HistorialOperacion(
@@ -209,7 +209,7 @@ public class PedidoService {
                 // Si se creó → borrar de lista y cola
                 if (despues != null) {
                     listaPedidos.removeById(despues.getId());
-                    colaPedidos.removeById(despues.getId());
+                    colaPedidos.removeByIdFIFO(despues.getId());
                 }
                 break;
 
