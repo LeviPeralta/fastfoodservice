@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fastfood.fastfoodservice.model.HistorialOperacion;
 import com.fastfood.fastfoodservice.model.Pedido;
 import com.fastfood.fastfoodservice.service.PedidoService;
 
@@ -95,14 +96,23 @@ public class Controller {
     }
 
     @PostMapping("/rollback")
-    public ResponseEntity<String> rollback() {
-        boolean ok = service.rollback();
-        if (ok) {
-            return ResponseEntity.ok("Rollback realizado.");
-        } else {
+    public ResponseEntity<?> rollback() {
+
+        HistorialOperacion evento = service.rollback();
+
+        if (evento == null) {
             return ResponseEntity.badRequest().body("No hay operaciones para deshacer.");
         }
+
+        // pedido afectado = antes si existe, sino después
+        Pedido afectado = evento.getPedidoAntes() != null
+                ? evento.getPedidoAntes()
+                : evento.getPedidoDespues();
+
+        Map<String, Object> json = new HashMap<>();
+        json.put("tipo", evento.getTipoOperacion());
+        json.put("pedidoAfectado", afectado);
+
+        return ResponseEntity.ok(json);
     }
-
-
 }

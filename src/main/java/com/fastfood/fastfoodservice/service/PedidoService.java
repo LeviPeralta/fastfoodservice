@@ -192,19 +192,21 @@ public class PedidoService {
         return "El total es de: " + total;
     }
 
-    public boolean rollback() {
+    public HistorialOperacion rollback() {
         if (historial.isEmpty()) {
-            return false;
+            return null;
         }
 
+        // Obtener la última operación del historial
         HistorialOperacion op = historial.pop();
+
         Pedido antes = op.getPedidoAntes();
         Pedido despues = op.getPedidoDespues();
 
         switch (op.getTipoOperacion()) {
 
             case "CREAR":
-                // Se creó un pedido → eliminar ese pedido
+                // Si se creó → borrar de lista y cola
                 if (despues != null) {
                     listaPedidos.removeById(despues.getId());
                     colaPedidos.removeById(despues.getId());
@@ -212,13 +214,14 @@ public class PedidoService {
                 break;
 
             case "CANCELAR":
-                // Se canceló → restaurar estado anterior
+                // Restauramos el estado previo
                 if (antes != null) {
                     Pedido p = listaPedidos.finById(antes.getId());
                     if (p != null) {
                         p.setEstado(antes.getEstado());
                     }
-                    // regresar a la cola si antes estaba en REGISTRADO
+
+                    // Si antes estaba REGISTRADO → regresarlo a la cola
                     if (antes.getEstado().equals("REGISTRADO")) {
                         colaPedidos.enqueue(p);
                     }
@@ -226,7 +229,7 @@ public class PedidoService {
                 break;
 
             case "DESPACHAR":
-                // Se despachó → restaurar estado previo y regresarlo a la cola
+                // Restauramos el estado previo y lo metemos a la cola
                 if (antes != null) {
                     Pedido p = listaPedidos.finById(antes.getId());
                     if (p != null) {
@@ -235,10 +238,9 @@ public class PedidoService {
                     }
                 }
                 break;
-            default:
-                return false;
         }
 
-        return true;
+        return op; // <-- regreso objeto COMPLETO
     }
+
 }
